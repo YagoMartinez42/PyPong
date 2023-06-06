@@ -1,4 +1,5 @@
 from pygame import *
+from random import randint
 
 #clase padre para los objetos
 class GameSprite(sprite.Sprite):
@@ -11,6 +12,15 @@ class GameSprite(sprite.Sprite):
        self.rect.y = player_y
    def update_img(self):
        window.blit(self.image, (self.rect.x, self.rect.y))
+   def reset(self):
+       self.rect.x = (win_width / 2) - (self.rect.width / 2)
+       self.rect.y = (win_height / 2) - (self.rect.height / 2)
+       speed_x = randint(-4, 4)
+       if speed_x == 0:
+          speed_x = 1
+       speed_y = randint(-4, 4)
+       if speed_y == 0:
+          speed_y = 1
 
 class Player(GameSprite):
    def update_r(self):
@@ -48,9 +58,18 @@ font.init()
 font = font.Font(None, 35)
 lose1 = font.render('PLAYER 1 LOSE!', True, (180, 0, 0))
 lose2 = font.render('PLAYER 2 LOSE!', True, (180, 0, 0))
+score1 = 0
+score1sticker = font.render (str(score1), True,(180, 180, 0))
+score2 = 0
+score2sticker = font.render (str(score2), True,(180, 180, 0))
 
-speed_x = 3
-speed_y = 3
+speed_x = randint(-4, 4)
+if speed_x == 0:
+   speed_x = 1
+speed_y = randint(-4, 4)
+if speed_y == 0:
+   speed_y = 1
+
 reboundTimerStart = time.get_ticks()
 
 while game:
@@ -67,6 +86,10 @@ while game:
        ball.rect.y += speed_y
 
        if (sprite.collide_rect(racket1, ball) or sprite.collide_rect(racket2, ball)) and reboundTimer - reboundTimerStart > 500:
+           if speed_x > 0:
+              speed_x += 1
+           else:
+              speed_x -=1
            speed_x *= -1
            reboundTimerStart = time.get_ticks()
       
@@ -76,18 +99,20 @@ while game:
 
        #si la pelota va más allá de esta paleta, mostrar la condición de derrota para el jugador 1
        if ball.rect.x < 0:
-           finish = True
-           window.blit(lose1, (200, 200))
-           game_over = True
+           score2 += 1
+           score2sticker = font.render (str(score2), True,(180, 180, 0))
+           ball.reset()
 
        #si la pelota va más allá de esta paleta, mostrar la condición de derrota para el jugador 2
        if ball.rect.x > win_width - ball.rect.width:
-           finish = True
-           window.blit(lose2, (200, 200))
-           game_over = True
+           score1 += 1
+           score1sticker = font.render (str(score1), True,(180, 180, 0))
+           ball.reset()
 
        racket1.update_img()
        racket2.update_img()
+       window.blit(score1sticker, ((win_width / 2) - 55, 10))
+       window.blit(score2sticker, ((win_width / 2) + 5, 10))
        ball.update_img()
 
    display.update()
